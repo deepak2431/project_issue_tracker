@@ -1,17 +1,30 @@
-import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "./redux/index"
-
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useAppDispatch, RootState, AppDispatch } from "./redux/index";
 import { Box, Typography, TextField, Stack, Button } from "@mui/material";
 import ProjectCard from "./components/ProjectCard";
 import { addIssue } from "./redux/IssueReducer";
+import { fetchIssues } from "./redux/GithubIssueReducer";
 
 const HomePage = () => {
 
-    const dispatch = useDispatch();
-    const issueList = useSelector((state: RootState) => state.issue.projectIssues)
-
+    const dispatch: AppDispatch = useAppDispatch();
     const [textInput, setTextInput] = useState('');
+    const githubIssueList = useSelector((state: RootState) => state.githubIssue.issues)
+    const loading = useSelector((state: RootState) => state.githubIssue.loading);
+    const error = useSelector((state: RootState) => state.githubIssue.error);
+
+    useEffect(() => {
+        dispatch(fetchIssues())
+      }, [dispatch]);
+    
+    if (loading) {
+      return <div>Loading...</div>;
+    }
+  
+    if (error) {
+      return <div>Error: {error}</div>;
+    }
 
     const handleTextInputChange = (e:any) => {
         setTextInput(e.target.value);
@@ -47,7 +60,7 @@ const HomePage = () => {
                         Opened issue
                     </Typography>
                     {
-                        issueList.map((issue) => {
+                        githubIssueList?.map((issue : string) => {
                             return(
                                 <ProjectCard issueTitle={issue} />
                             )
